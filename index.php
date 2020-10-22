@@ -1,8 +1,16 @@
 <?php
 require_once('database.php');
-$sql = "SELECT * FROM users";
 $db = new Database();
-$users = $db->select($sql);
+$link = $db->PDO();
+$sql = $link->prepare("SELECT * FROM users");
+$users = $db->PDOExec($sql);
+
+if($_GET && $_GET["action"] == "update") {
+    $user = $link->prepare("SELECT * FROM users WHERE id =  :id");
+    $user->bindValue(":id", $_GET["id"]);
+    $result = $db->PDOExec($user);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -44,6 +52,7 @@ $users = $db->select($sql);
                                 <td><?php echo $user->gender; ?></td>
                                 <td>
                                     <a href="action.php?action=eliminar&item=<?php echo $user->id; ?>" type="button" class="btn btn-danger">Eliminar</button>
+                                    <a href="?action=update&id=<?php echo $user->id; ?>" type="button" class="btn btn-primary">Actualizar</button>
                                 </td>
                             </tr>
                     <?php
@@ -57,25 +66,37 @@ $users = $db->select($sql);
     <form action="action.php?action=crear" method="post">
         <div class="row">
             <div class="form-group col">
+                <input type="hidden" name="id" value="<?php if($_GET['action'] == 'update'){ echo($result[0]->id); } ?>">
                 <label for="name">Nombre</label>
-                <input type="text" class="form-control" name="name" placeholder="Nombre" required>
+                <input
+                    value="<?php echo($result[0]->name); ?>"
+                    type="text"
+                    class="form-control"
+                    name="name"
+                    placeholder="Nombre"
+                    required>
             </div>
             <div class="form-group col">
                 <label for="lastname">Apellido</label>
-                <input type="text" class="form-control" name="lastname" placeholder="Apellido" required>
+                <input
+                    value="<?php if($_GET['action'] == 'update'){ echo($result[0]->lastname); } ?>" type="text" class="form-control" name="lastname" placeholder="Apellido" required>
             </div>
         </div>
         <div class="row">
             <div class="form-group col">
                 <label for="password">Contraseña</label>
-                <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+                <input
+                    value="<?php if($_GET['action'] == 'update'){ echo($result[0]->password); } ?>" type="password" class="form-control" name="password" placeholder="Contraseña" required>
             </div>
             <div class="form-group col">
                 <label for="gender">Genero</label>
                 <select name="gender" required class="form-control">
-                    <option value="masulino">Masculino</option>
-                    <option value="femenino">Femenino</option>
-                    <option value="otro">Otro</option>
+                    <option value="masulino" 
+                        <?php if($_GET['action'] == 'update' && $result[0]->gender === 'masculino'){ echo('selected'); }?>>Masculino</option>
+                    <option
+                        <?php if($_GET['action'] == 'update' && $result[0]->gender === 'femenino'){ echo('selected'); }?> value="femenino">Femenino</option>
+                    <option
+                        <?php if($_GET['action'] == 'update' && $result[0]->gender === 'otro'){ echo('selected'); }?> value="otro">Otro</option>
                 </select>
             </div>
         </div>
