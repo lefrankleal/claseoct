@@ -32,7 +32,7 @@ class Database {
         }
     }
 
-    function PDOExec($sql) {
+    function PDOSelect($sql) {
         $sql->setFetchMode(PDO::FETCH_OBJ);
         $sql->execute();
         while ($row = $sql->fetch()) {
